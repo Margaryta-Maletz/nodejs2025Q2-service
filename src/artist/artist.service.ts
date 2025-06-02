@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { v4 } from 'uuid';
-import { artists } from '../_db/db';
+import { albums, artists, tracks } from '../_db/db';
 import { Artist } from './artist.interface';
 import { CreateArtistDto } from './create-artist.dto';
 
@@ -52,6 +52,19 @@ export class ArtistService {
 
     if (index !== -1) {
       artists.splice(index, 1);
+
+      tracks.forEach((track) => {
+        if (track.artistId === id) {
+          track.artistId = null;
+        }
+      });
+
+      albums.forEach((albym) => {
+        if (albym.artistId === id) {
+          albym.artistId = null;
+        }
+      });
+
       return;
     }
 

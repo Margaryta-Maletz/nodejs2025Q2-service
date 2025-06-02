@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Album } from './album.interface';
-import { albums } from 'src/_db/db';
+import { albums, tracks } from '../_db/db';
 import { CreateAlbumDto } from './create-album.dto';
 import { v4 } from 'uuid';
 
@@ -55,6 +55,13 @@ export class AlbumService {
 
     if (index !== -1) {
       albums.splice(index, 1);
+
+      tracks.forEach((track) => {
+        if (track.albumId === id) {
+          track.albumId = null;
+        }
+      });
+
       return;
     }
 
