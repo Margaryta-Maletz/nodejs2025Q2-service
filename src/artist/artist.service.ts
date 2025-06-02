@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { v4 } from 'uuid';
-import { albums, artists, tracks } from '../_db/db';
+import { albums, artists, favorites, tracks } from '../_db/db';
 import { Artist } from './artist.interface';
 import { CreateArtistDto } from './create-artist.dto';
 
@@ -59,11 +59,16 @@ export class ArtistService {
         }
       });
 
-      albums.forEach((albym) => {
-        if (albym.artistId === id) {
-          albym.artistId = null;
+      albums.forEach((album) => {
+        if (album.artistId === id) {
+          album.artistId = null;
         }
       });
+
+      const ind = favorites.artists.findIndex((item: string) => item === id);
+      if (ind !== -1) {
+        favorites.artists.splice(index, 1);
+      }
 
       return;
     }

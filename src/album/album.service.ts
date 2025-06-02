@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Album } from './album.interface';
-import { albums, tracks } from '../_db/db';
+import { albums, favorites, tracks } from '../_db/db';
 import { CreateAlbumDto } from './create-album.dto';
 import { v4 } from 'uuid';
 
@@ -61,6 +61,13 @@ export class AlbumService {
           track.albumId = null;
         }
       });
+
+      const indAlbum = favorites.albums.findIndex(
+        (item: string) => item === id,
+      );
+      if (indAlbum !== -1) {
+        favorites.albums.splice(index, 1);
+      }
 
       return;
     }

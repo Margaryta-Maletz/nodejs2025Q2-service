@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { tracks } from 'src/_db/db';
+import { favorites, tracks } from 'src/_db/db';
 import { v4 } from 'uuid';
 import { Track } from './track.interface';
 import { CreateTrackDto } from './create-track.dto';
@@ -53,6 +53,12 @@ export class TrackService {
 
     if (index !== -1) {
       tracks.splice(index, 1);
+
+      const ind = favorites.tracks.findIndex((item: string) => item === id);
+      if (ind !== -1) {
+        favorites.tracks.splice(index, 1);
+      }
+
       return;
     }
 
