@@ -8,7 +8,7 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone git@github.com:Margaryta-Maletz/nodejs2025Q2-service.git
 ```
 
 ## Installing NPM modules
@@ -16,6 +16,12 @@ git clone {repository URL}
 ```
 npm install
 ```
+
+## Before running
+
+- Create `.env` file in root directory.
+- Copy settings from .env.example.
+- Change PORT if needed (the default port is 4000).
 
 ## Running application
 
@@ -41,6 +47,12 @@ To run only one of all test suites
 
 ```
 npm run test -- <path to suite>
+
+npm run test -- favorites.e2e.spec.ts
+npm run test -- artists.e2e.spec.ts
+npm run test -- users.e2e.spec.ts
+npm run test -- albums.e2e.spec.ts
+npm run test -- tracks.e2e.spec.ts
 ```
 
 To run all test with authorization
