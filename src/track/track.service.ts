@@ -49,13 +49,13 @@ export class TrackService {
   }
 
   delete(id: string) {
-    const index = tracks.findIndex((track) => track.id === id);
+    let index = tracks.findIndex((track) => track.id === id);
 
     if (index !== -1) {
       tracks.splice(index, 1);
 
-      const ind = favorites.tracks.findIndex((item: string) => item === id);
-      if (ind !== -1) {
+      index = favorites.tracks.findIndex((item: string) => item === id);
+      if (index !== -1) {
         favorites.tracks.splice(index, 1);
       }
 

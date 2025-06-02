@@ -51,7 +51,7 @@ export class AlbumService {
   }
 
   delete(id: string) {
-    const index = albums.findIndex((album) => album.id === id);
+    let index = albums.findIndex((album) => album.id === id);
 
     if (index !== -1) {
       albums.splice(index, 1);
@@ -62,10 +62,8 @@ export class AlbumService {
         }
       });
 
-      const indAlbum = favorites.albums.findIndex(
-        (item: string) => item === id,
-      );
-      if (indAlbum !== -1) {
+      index = favorites.albums.findIndex((item: string) => item === id);
+      if (index !== -1) {
         favorites.albums.splice(index, 1);
       }
 

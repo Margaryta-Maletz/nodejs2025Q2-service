@@ -48,7 +48,7 @@ export class ArtistService {
   }
 
   delete(id: string) {
-    const index = artists.findIndex((artist) => artist.id === id);
+    let index = artists.findIndex((artist) => artist.id === id);
 
     if (index !== -1) {
       artists.splice(index, 1);
@@ -65,8 +65,8 @@ export class ArtistService {
         }
       });
 
-      const ind = favorites.artists.findIndex((item: string) => item === id);
-      if (ind !== -1) {
+      index = favorites.artists.findIndex((item: string) => item === id);
+      if (index !== -1) {
         favorites.artists.splice(index, 1);
       }
 
