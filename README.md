@@ -29,7 +29,7 @@ npm install
 npm start
 ```
 
-After starting the app on port (4000 as default) you can open
+After starting the app on port (4000 default or **change to the PORT in use**) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
 For more information about OpenAPI/Swagger please visit https://swagger.io/.
 
@@ -53,18 +53,6 @@ npm run test -- artists.e2e.spec.ts
 npm run test -- users.e2e.spec.ts
 npm run test -- albums.e2e.spec.ts
 npm run test -- tracks.e2e.spec.ts
-```
-
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
 ```
 
 ### Auto-fix and format
