@@ -106,7 +106,7 @@ components:
             $ref: '#/components/schemas/Track'
 
 paths:
-  /users:
+  /user:
     get:
       tags:
         - Users
@@ -153,7 +153,7 @@ paths:
         400:
           description: Bad request. body does not contain required fields
 
-  /users/{userId}:
+  /user/{userId}:
     parameters:
       - name: userId
         in: path
@@ -245,7 +245,7 @@ paths:
 
         404:
           description: User not found
-  /tracks:
+  /track:
     get:
       tags:
         - Track
@@ -297,7 +297,7 @@ paths:
         400:
           description: Bad request. body does not contain required fields
 
-  /tracks/{id}:
+  /track/{id}:
     parameters:
       - name: id
         in: path
@@ -398,7 +398,7 @@ paths:
 
         404:
           description: Track was not found.
-  /albums:
+  /album:
     get:
       tags:
         - Album
@@ -448,7 +448,7 @@ paths:
         400:
           description: Bad request. body does not contain required fields
 
-  /albums/{id}:
+  /album/{id}:
     parameters:
       - name: id
         in: path
@@ -522,7 +522,7 @@ paths:
 
         404:
           description: Album was not found.
-  /artists:
+  /artist:
     get:
       tags:
         - Artist
@@ -567,7 +567,7 @@ paths:
         400:
           description: Bad request. body does not contain required fields
 
-  /artists/{id}:
+  /artist/{id}:
     parameters:
       - name: id
         in: path
