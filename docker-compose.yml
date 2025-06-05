@@ -10,7 +10,10 @@ services:
       POSTGRES_DB: ${DB_NAME}
     networks:
       - app_network
+    ports:
+      - 5433:${DB_PORT}
 
 networks:
   app_network:
     driver: bridge
+    name: app_network
