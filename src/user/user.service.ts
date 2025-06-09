@@ -1,68 +1,109 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { v4 } from 'uuid';
-import { users } from '../_db/db';
 import { CreateUserDto } from './create-user.dto';
 import { UpdatePasswordDto } from './update-password.dto';
 import { UserEntity } from './user.entity';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 @Injectable()
 export class UserService {
-  getAll(): UserEntity[] {
-    return users;
+  async getAll(): Promise<Omit<UserEntity, 'password'>[]> {
+    const users = await prisma.user.findMany();
+
+    return users.map((user) => {
+      const { createdAt, updatedAt, id, login, version } = user;
+
+      return {
+        createdAt: new Date(createdAt).getTime(),
+        updatedAt: new Date(updatedAt).getTime(),
+        id,
+        login,
+        version,
+      };
+    });
   }
 
-  getUser(id: string): UserEntity {
-    const current = users.find((user) => user.id === id);
-    if (current) {
-      return current;
+  async getUser(id: string): Promise<Omit<UserEntity, 'password'>> {
+    try {
+      const current = await prisma.user.findUniqueOrThrow({
+        where: { id },
+      });
+
+      const { createdAt, updatedAt, login, version } = current;
+
+      return {
+        createdAt: new Date(createdAt).getTime(),
+        updatedAt: new Date(updatedAt).getTime(),
+        id,
+        login,
+        version,
+      };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
     }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 
-  post(dto: CreateUserDto): UserEntity {
-    const { login, password } = dto;
-    const id = v4();
-    const date = Date.now();
-    const user = new UserEntity({
+  async post(dto: CreateUserDto): Promise<Omit<UserEntity, 'password'>> {
+    const { id, createdAt, updatedAt, login, version } =
+      await prisma.user.create({
+        data: dto,
+      });
+
+    return {
+      createdAt: new Date(createdAt).getTime(),
+      updatedAt: new Date(updatedAt).getTime(),
       id,
       login,
-      password,
-      version: 1,
-      createdAt: date,
-      updatedAt: date,
-    });
-
-    users.push(user);
-
-    return user;
+      version,
+    };
   }
 
-  put(id, dto: UpdatePasswordDto): UserEntity {
-    const index = users.findIndex((user) => user.id === id);
-    if (index !== -1) {
+  async put(id, dto: UpdatePasswordDto): Promise<Omit<UserEntity, 'password'>> {
+    try {
+      const current = await prisma.user.findUniqueOrThrow({
+        where: { id },
+      });
+
       const { oldPassword, newPassword } = dto;
-      if (users[index].password === oldPassword) {
-        users[index].password = newPassword;
-        users[index].version += 1;
-        users[index].updatedAt = Date.now();
 
-        return users[index];
+      if (current.password === oldPassword) {
+        const { createdAt, updatedAt, login, version } =
+          await prisma.user.update({
+            where: { id },
+            data: {
+              password: newPassword,
+              version: current.version + 1,
+            },
+          });
+
+        return {
+          createdAt: new Date(createdAt).getTime(),
+          updatedAt: new Date(updatedAt).getTime(),
+          id,
+          login,
+          version,
+        };
       }
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
     }
 
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
   }
 
-  delete(id: string) {
-    const index = users.findIndex((user) => user.id === id);
-
-    if (index !== -1) {
-      users.splice(index, 1);
-      return;
+  async delete(id: string) {
+    try {
+      await prisma.user.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
     }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 }
