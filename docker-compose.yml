@@ -1,0 +1,54 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - node_modules:/app/node_modules
+      - app_logs:/app/logs
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - database
+    networks:
+      - app_network
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+          ignore:
+            - node_modules
+
+  database:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    env_file:
+      - .env
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - app_network
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - pglog:/var/log/postgresql
+
+volumes:
+  pgdata:
+  pglog:
+  node_modules:
+  app_logs:
+
+networks:
+  app_network:
+    driver: bridge
+    name: app_network

@@ -1,67 +1,63 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { favorites, tracks } from 'src/_db/db';
-import { v4 } from 'uuid';
 import { Track } from './track.interface';
 import { CreateTrackDto } from './create-track.dto';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 @Injectable()
 export class TrackService {
-  getAll(): Track[] {
-    return tracks;
+  async getAll(): Promise<Track[]> {
+    return prisma.track.findMany();
   }
 
-  getTrack(id: string): Track {
-    const current = tracks.find((track) => track.id === id);
-    if (current) {
-      return current;
-    }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-  }
-
-  post(dto: CreateTrackDto): Track {
-    const id = v4();
-
-    const track = {
-      id,
-      ...dto,
-    };
-
-    tracks.push(track);
-
-    return track;
-  }
-
-  put(id, dto: CreateTrackDto): Track {
-    const index = tracks.findIndex((track) => track.id === id);
-    if (index !== -1) {
-      const { name, artistId, albumId, duration } = dto;
-
-      tracks[index].name = name;
-      tracks[index].artistId = artistId;
-      tracks[index].albumId = albumId;
-      tracks[index].duration = duration;
-
-      return tracks[index];
-    }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-  }
-
-  delete(id: string) {
-    let index = tracks.findIndex((track) => track.id === id);
-
-    if (index !== -1) {
-      tracks.splice(index, 1);
-
-      index = favorites.tracks.findIndex((item: string) => item === id);
-      if (index !== -1) {
-        favorites.tracks.splice(index, 1);
+  async getTrack(id: string): Promise<Track> {
+    try {
+      return await prisma.track.findUniqueOrThrow({
+        where: { id },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
-
-      return;
     }
+  }
 
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+  async post(dto: CreateTrackDto): Promise<Track> {
+    return prisma.track.create({
+      data: { ...dto, favorite: dto.favorite ?? false },
+    });
+  }
+
+  async put(id, dto: CreateTrackDto): Promise<Track> {
+    try {
+      await prisma.track.findUniqueOrThrow({
+        where: { id },
+      });
+
+      return await prisma.track.update({
+        where: { id },
+        data: dto,
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      await prisma.track.findUniqueOrThrow({
+        where: { id },
+      });
+
+      await prisma.track.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+    }
   }
 }

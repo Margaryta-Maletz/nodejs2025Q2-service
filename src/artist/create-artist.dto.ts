@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateArtistDto {
   @IsString()
@@ -8,4 +8,8 @@ export class CreateArtistDto {
   @IsBoolean()
   @IsNotEmpty()
   grammy: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  favorite?: boolean = false;
 }
