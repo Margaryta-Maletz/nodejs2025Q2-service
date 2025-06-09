@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateTrackDto {
   @IsString()
@@ -16,4 +22,8 @@ export class CreateTrackDto {
   @IsNumber()
   @IsNotEmpty()
   duration: number;
+
+  @IsBoolean()
+  @IsOptional()
+  favorite?: boolean = false;
 }
