@@ -9,14 +9,13 @@ import {
 } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
 import { FavoritesService } from './favs.service';
-import { Favs } from './favs.interface';
 
 @Controller('favs')
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
   @Get()
-  getHello(): Favs {
+  getHello() {
     return this.favoritesService.getAll();
   }
 

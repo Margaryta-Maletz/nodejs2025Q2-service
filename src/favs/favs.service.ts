@@ -1,66 +1,65 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { albums, artists, favorites, tracks } from '../_db/db';
 import { Favs } from './favs.interface';
+import { PrismaClient, Artist, Album, Track } from '@prisma/client';
+const prisma = new PrismaClient();
 
 @Injectable()
 export class FavoritesService {
-  private getEntityArray(entity: string) {
-    if (entity === 'album') {
-      return albums;
-    }
+  async getAll(): Promise<Favs> {
+    const albums: Album[] = await prisma.album.findMany({
+      where: { favorite: true },
+    });
+    const artists: Artist[] = await prisma.artist.findMany({
+      where: { favorite: true },
+    });
+    const tracks: Track[] = await prisma.track.findMany({
+      where: { favorite: true },
+    });
 
-    if (entity === 'artist') {
-      return artists;
-    }
-
-    if (entity === 'track') {
-      return tracks;
-    }
-
-    return [];
-  }
-
-  getAll(): Favs {
     return {
-      albums: favorites.albums.map((id) =>
-        albums.find((item) => item.id === id),
-      ),
-      artists: favorites.artists.map((id) =>
-        artists.find((item) => item.id === id),
-      ),
-      tracks: favorites.tracks.map((id) =>
-        tracks.find((item) => item.id === id),
-      ),
+      albums: albums.map(({ id, name, year, artistId }) => ({
+        id,
+        name,
+        year,
+        artistId,
+      })),
+      artists: artists.map(({ id, name, grammy }) => ({ id, name, grammy })),
+      tracks: tracks.map(({ id, name, duration, artistId, albumId }) => ({
+        id,
+        name,
+        duration,
+        artistId,
+        albumId,
+      })),
     };
   }
 
-  post(entity: string, id: string) {
-    const entityArray = this.getEntityArray(entity);
-    const index = entityArray.findIndex((item) => item.id === id);
-
-    if (index !== -1) {
-      favorites[`${entity}s`].push(entityArray[index].id);
-
-      return;
+  async post(entity: string, id: string) {
+    try {
+      await prisma[entity].update({
+        where: { id },
+        data: { favorite: true },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException(
+          'Unprocessable entity',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
     }
-
-    throw new HttpException(
-      'Unprocessable entity',
-      HttpStatus.UNPROCESSABLE_ENTITY,
-    );
   }
 
-  delete(entity: string, id: string) {
-    const index = favorites[`${entity}s`].findIndex(
-      (item: string) => item === id,
-    );
-
-    if (index !== -1) {
-      favorites[`${entity}s`].splice(index, 1);
-
-      return;
+  async delete(entity: string, id: string) {
+    try {
+      await prisma[entity].update({
+        where: { id },
+        data: { favorite: false },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
     }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 }
