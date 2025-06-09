@@ -1,75 +1,63 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Album } from './album.interface';
-import { albums, favorites, tracks } from '../_db/db';
 import { CreateAlbumDto } from './create-album.dto';
-import { v4 } from 'uuid';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 @Injectable()
 export class AlbumService {
-  getAll(): Album[] {
-    return albums;
+  async getAll(): Promise<Album[]> {
+    return prisma.album.findMany();
   }
 
-  getAlbum(id: string): Album {
-    const current = albums.find((album) => album.id === id);
-    if (current) {
-      return current;
+  async getAlbum(id: string): Promise<Album> {
+    try {
+      return await prisma.album.findUniqueOrThrow({
+        where: { id },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
     }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 
-  post(dto: CreateAlbumDto): Album {
-    const { name, year, artistId } = dto;
-    const id = v4();
-
-    const album = {
-      id,
-      name,
-      year,
-      artistId,
-    };
-
-    albums.push(album);
-
-    return album;
+  async post(dto: CreateAlbumDto): Promise<Album> {
+    return prisma.album.create({
+      data: { ...dto, favorite: dto.favorite ?? false },
+    });
   }
 
-  put(id, dto: CreateAlbumDto): Album {
-    const index = albums.findIndex((album) => album.id === id);
-    if (index !== -1) {
-      const { name, year, artistId } = dto;
-
-      albums[index].name = name;
-      albums[index].year = year;
-      albums[index].artistId = artistId;
-
-      return albums[index];
-    }
-
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-  }
-
-  delete(id: string) {
-    let index = albums.findIndex((album) => album.id === id);
-
-    if (index !== -1) {
-      albums.splice(index, 1);
-
-      tracks.forEach((track) => {
-        if (track.albumId === id) {
-          track.albumId = null;
-        }
+  async put(id, dto: CreateAlbumDto): Promise<Album> {
+    try {
+      await prisma.album.findUniqueOrThrow({
+        where: { id },
       });
 
-      index = favorites.albums.findIndex((item: string) => item === id);
-      if (index !== -1) {
-        favorites.albums.splice(index, 1);
+      return await prisma.album.update({
+        where: { id },
+        data: dto,
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
-
-      return;
     }
+  }
 
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+  async delete(id: string) {
+    try {
+      await prisma.album.findUniqueOrThrow({
+        where: { id },
+      });
+
+      await prisma.album.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+    }
   }
 }
