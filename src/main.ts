@@ -6,12 +6,24 @@ import { parse } from 'yaml';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
+import { LoggingService } from 'src/logging/logging.service';
 
 dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 4000;
+  const loggingService = app.get(LoggingService);
+
+  app.useLogger(loggingService);
+
+  process.on('uncaughtException', (error) => {
+    loggingService.error(`Uncaught Exception: ${error.message}`, error.stack);
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    loggingService.error(`Unhandled Rejection: ${reason}`);
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
