@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './create-user.dto';
 import { UpdatePasswordDto } from './update-password.dto';
 import { UserEntity } from './user.entity';
+import { User } from './user.interface';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -38,6 +39,20 @@ export class UserService {
         login,
         version,
       };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+    }
+  }
+
+  async getUserByLogin(
+    login: string,
+  ): Promise<Pick<User, 'id' | 'login' | 'password'>> {
+    try {
+      return await prisma.user.findFirstOrThrow({
+        where: { login },
+      });
     } catch (error) {
       if (error.code === 'P2025') {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);

@@ -6,7 +6,7 @@ import { parse } from 'yaml';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
-import { LoggingService } from 'src/logging/logging.service';
+import { LoggingService } from './logging/logging.service';
 
 dotenv.config();
 
