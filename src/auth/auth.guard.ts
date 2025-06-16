@@ -6,27 +6,15 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Reflector } from '@nestjs/core';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private reflector: Reflector,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    if (isPublic) {
-      return true;
-    }
-
     const request = context.switchToHttp().getRequest();
     const path = request.path;
 
@@ -36,6 +24,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const authHeader = request.headers['authorization'];
+
     if (!authHeader) {
       throw new UnauthorizedException('Authorization header is missing');
     }

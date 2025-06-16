@@ -4,6 +4,7 @@ import {
   Body,
   HttpStatus,
   UnauthorizedException,
+  HttpCode,
 } from '@nestjs/common';
 import { CreateUserDto } from '../user/create-user.dto';
 import { AuthService } from './auth.service';
@@ -16,36 +17,23 @@ export class AuthController {
   @Post('signup')
   @Public()
   async signup(@Body() signupDto: CreateUserDto) {
-    const user = await this.authService.signup(signupDto);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'User created successfully',
-      user,
-    };
+    return await this.authService.signup(signupDto);
   }
 
   @Post('login')
   @Public()
+  @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: CreateUserDto) {
-    const tokens = await this.authService.login(loginDto);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Login successful',
-      tokens,
-    };
+    return await this.authService.login(loginDto);
   }
 
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   async refresh(@Body() refreshTokenDto: string) {
     if (!refreshTokenDto) {
       throw new UnauthorizedException('Refresh token is not valid');
     }
 
-    const tokens = await this.authService.refresh(refreshTokenDto);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Tokens refreshed successfully',
-      tokens,
-    };
+    return await this.authService.refresh(refreshTokenDto);
   }
 }
