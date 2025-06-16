@@ -7,6 +7,8 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
 import { LoggingService } from './logging/logging.service';
+import { HttpExceptionFilter } from './logging/http-exception.filter';
+import { LoggingInterceptor } from './logging/logging.interceptor';
 
 dotenv.config();
 
@@ -14,6 +16,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 4000;
   const loggingService = app.get(LoggingService);
+  app.useGlobalFilters(new HttpExceptionFilter(loggingService));
+  app.useGlobalInterceptors(new LoggingInterceptor(loggingService));
 
   app.useLogger(loggingService);
 
