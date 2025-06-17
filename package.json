@@ -25,6 +25,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "docker:init": "npm install --omit=dev && npm cache clean --force && npx prisma generate && npx prisma migrate deploy && nest start",
     "docker:start": "docker-compose up --watch",
+    "docker:build": "docker-compose up --build --watch",
     "docker:stop": "docker-compose down"
   },
   "dependencies": {
